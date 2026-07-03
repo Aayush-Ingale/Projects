@@ -306,3 +306,13 @@ main { max-width: 640px; margin: 0 auto; padding: 48px 24px 80px; }
   .hero h1 { font-size: 1.6rem; }
   .dash-head { flex-direction: column; align-items: flex-start; gap: 14px; }
 }
+
+.attachment-thumb {
+  max-width: 160px;
+  max-height: 160px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  margin-bottom: 16px;
+  display: block;
+  cursor: pointer;
+}
