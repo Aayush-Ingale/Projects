@@ -121,7 +121,7 @@ def submit_ticket():
             "attachment": attachment_filename,
         }
         save_tickets(tickets)
-        return render_template("submit.html", success_id=ticket_id)
+        return render_template("submit.html", success_id=ticket_id, had_attachment=bool(attachment_filename))
 
     return render_template("submit.html")
 
