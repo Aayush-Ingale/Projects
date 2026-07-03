@@ -316,3 +316,9 @@ main { max-width: 640px; margin: 0 auto; padding: 48px 24px 80px; }
   display: block;
   cursor: pointer;
 }
+
+.resolution-box {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
