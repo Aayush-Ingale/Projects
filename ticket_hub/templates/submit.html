@@ -18,7 +18,7 @@
     </div>
   </div>
 {% else %}
-  <form class="ticket-form" method="POST" action="{{ url_for('submit_ticket') }}">
+  <form class="ticket-form" method="POST" action="{{ url_for('submit_ticket') }}" enctype="multipart/form-data">
     <label for="customer_name">Your name</label>
     <input type="text" id="customer_name" name="customer_name" value="{{ name or '' }}" placeholder="Jordan Lee" required>
 
@@ -37,6 +37,9 @@
     <label for="description">What's going on?</label>
     <textarea id="description" name="description" rows="6" placeholder="Be as specific as you can — what you were doing, what happened, what you expected instead." required>{{ description or '' }}</textarea>
 
+    <label for="attachment">Add a photo (optional)</label>
+<input type="file" id="attachment" name="attachment" accept="image/*">
+    
     <button class="btn-primary" type="submit">Submit ticket</button>
   </form>
 {% endif %}
