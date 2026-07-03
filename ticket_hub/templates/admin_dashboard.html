@@ -33,6 +33,11 @@
           </div>
           <p class="stub-customer">{{ t.customer_name }} <span class="stub-date">· {{ t.created_at }}</span></p>
           <p class="stub-desc">{{ t.description }}</p>
+          {% if t.attachment %}
+  <a class="attachment-link" href="{{ url_for('view_upload', filename=t.attachment) }}" target="_blank">
+    <img class="attachment-thumb" src="{{ url_for('view_upload', filename=t.attachment) }}" alt="Attachment for ticket #{{ t.id }}">
+  </a>
+{% endif %}
 
           <form class="resolve-form" method="POST" action="{{ url_for('update_ticket', ticket_id=t.id) }}">
             <select name="status">
