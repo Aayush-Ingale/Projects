@@ -125,6 +125,24 @@ def submit_ticket():
 
     return render_template("submit.html")
 
+@app.route("/status", methods=["GET", "POST"])
+def check_status():
+    ticket = None
+    error = None
+
+    if request.method == "POST":
+        ticket_id = request.form.get("ticket_id", "").strip()
+        name = request.form.get("customer_name", "").strip()
+
+        tickets = load_tickets()
+        found = tickets.get(ticket_id)
+
+        if found and found["customer_name"].strip().lower() == name.lower():
+            ticket = found
+        else:
+            error = "No matching ticket found. Double check your ticket number and the name you used."
+
+    return render_template("status.html", ticket=ticket, error=error)
 
 # =========================================================================
 # ADMIN ROUTES
