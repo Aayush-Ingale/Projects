@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Check Ticket Status · Help Desk{% endblock %}
+{% block content %}
+
+<section class="hero">
+  <p class="eyebrow">Check on your ticket</p>
+  <h1>See where things stand.</h1>
+</section>
+
+{% if ticket %}
+  <div class="stub-card">
+    <div class="stub-perf"></div>
+    <div class="stub-body">
+      <div class="stub-top">
+        <span class="stub-id">#{{ ticket.id }}</span>
+        <span class="priority-tag chip-{{ ticket.priority|lower }}">{{ ticket.priority }}</span>
+        <span class="status-tag status-{{ ticket.status|lower|replace(' ', '-') }}">{{ ticket.status }}</span>
+      </div>
+      <p class="stub-customer">{{ ticket.customer_name }} <span class="stub-date">· filed {{ ticket.created_at }}</span></p>
+      <p class="stub-desc">{{ ticket.description }}</p>
+
+      {% if ticket.attachment %}
+        <p class="stub-note">A photo was attached to this ticket.</p>
+      {% endif %}
+
+      {% if ticket.status == "Resolved" %}
+        <div class="resolution-box">
+          <p class="stub-label">Resolution</p>
+          <p class="stub-desc">{{ ticket.resolution_notes or "Marked resolved, no notes were added." }}</p>
+        </div>
+      {% elif ticket.resolution_notes %}
+        <div class="resolution-box">
+          <p class="stub-label">Notes so far</p>
+          <p class="stub-desc">{{ ticket.resolution_notes }}</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+  <a class="btn-ghost" href="{{ url_for('check_status') }}">Check another ticket</a>
+{% else %}
+  <form class="ticket-form" method="POST" action="{{ url_for('check_status') }}">
+    {% if error %}<p class="flash flash-error">{{ error }}</p>{% endif %}
+
+    <label for="ticket_id">Ticket number</label>
+    <input type="text" id="ticket_id" name="ticket_id" placeholder="1001" required>
+
+    <label for="customer_name">Your name</label>
+    <input type="text" id="customer_name" name="customer_name" placeholder="Same name you filed with" required>
+
+    <button class="btn-primary" type="submit">Check status</button>
+  </form>
+{% endif %}
+
+{% endblock %}
