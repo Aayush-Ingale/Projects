@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · Help Desk{% endblock %}
+{% block content %}
+
+<section class="dash-head">
+  <div>
+    <p class="eyebrow">Admin dashboard</p>
+    <h1>Queue</h1>
+  </div>
+  <div class="dash-stats">
+    <div><span class="stat-num">{{ total }}</span><span class="stat-label">total</span></div>
+    <div><span class="stat-num">{{ rate }}%</span><span class="stat-label">resolved</span></div>
+  </div>
+</section>
+
+<div class="dash-controls">
+  <a class="sort-toggle {{ 'active' if sort_priority }}" href="{{ url_for('admin_dashboard', sort='1') }}">Priority order</a>
+  <a class="sort-toggle {{ 'active' if not sort_priority }}" href="{{ url_for('admin_dashboard', sort='0') }}">Newest first</a>
+</div>
+
+{% if not tickets %}
+  <p class="empty-state">No tickets yet. Once someone files one, it'll show up here.</p>
+{% else %}
+  <div class="ticket-list">
+    {% for t in tickets %}
+      <div class="stub-card {{ 'is-resolved' if t.status == 'Resolved' }}">
+        <div class="stub-perf"></div>
+        <div class="stub-body">
+          <div class="stub-top">
+            <span class="stub-id">#{{ t.id }}</span>
+            <span class="priority-tag chip-{{ t.priority|lower }}">{{ t.priority }}</span>
+            <span class="status-tag status-{{ t.status|lower|replace(' ', '-') }}">{{ t.status }}</span>
+          </div>
+          <p class="stub-customer">{{ t.customer_name }} <span class="stub-date">· {{ t.created_at }}</span></p>
+          <p class="stub-desc">{{ t.description }}</p>
+
+          <form class="resolve-form" method="POST" action="{{ url_for('update_ticket', ticket_id=t.id) }}">
+            <select name="status">
+              <option value="Open" {% if t.status == 'Open' %}selected{% endif %}>Open</option>
+              <option value="In Progress" {% if t.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+              <option value="Resolved" {% if t.status == 'Resolved' %}selected{% endif %}>Resolved</option>
+            </select>
+            <input type="text" name="resolution_notes" placeholder="Resolution notes" value="{{ t.resolution_notes }}">
+            <button class="btn-ghost" type="submit">Save</button>
+          </form>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+{% endblock %}
