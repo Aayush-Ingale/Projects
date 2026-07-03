@@ -23,8 +23,10 @@ import datetime
 import json
 import os
 from functools import wraps
-
 from flask import Flask, render_template, request, redirect, url_for, session, flash
+import uuid
+from werkzeug.utils import secure_filename
+from flask import send_from_directory
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_FILE = os.environ.get("TICKET_DB_FILE", os.path.join(APP_DIR, "tickets_database.json"))
@@ -33,6 +35,15 @@ PRIORITY_WEIGHTS = {"High": 1, "Medium": 2, "Low": 3}
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("TICKET_SECRET_KEY", os.urandom(24))
+
+UPLOAD_FOLDER = os.path.join(APP_DIR, "uploads")
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config["MAX_CONTENT_LENGTH"] = 8 * 1024 * 1024  # 8 MB max upload
+
+
+def allowed_file(filename: str) -> bool:
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 # =========================================================================
@@ -87,6 +98,16 @@ def submit_ticket():
             flash("Please fill in your name and a description of the issue.", "error")
             return render_template("submit.html", name=name, description=description, priority=priority)
 
+        attachment_filename = ""
+        file = request.files.get("attachment")
+        if file and file.filename:
+            if not allowed_file(file.filename):
+                flash("Attachments must be an image (png, jpg, jpeg, gif, or webp).", "error")
+                return render_template("submit.html", name=name, description=description, priority=priority)
+            safe_name = secure_filename(file.filename)
+            attachment_filename = f"{uuid.uuid4().hex}_{safe_name}"
+            file.save(os.path.join(UPLOAD_FOLDER, attachment_filename))
+
         tickets = load_tickets()
         ticket_id = next_ticket_id(tickets)
         tickets[str(ticket_id)] = {
@@ -97,6 +118,7 @@ def submit_ticket():
             "status": "Open",
             "created_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
             "resolution_notes": "",
+            "attachment": attachment_filename,
         }
         save_tickets(tickets)
         return render_template("submit.html", success_id=ticket_id)
@@ -162,6 +184,11 @@ def update_ticket(ticket_id):
         save_tickets(tickets)
         flash(f"Ticket #{ticket_id} updated.", "success")
     return redirect(url_for("admin_dashboard"))
+
+@app.route("/admin/uploads/<path:filename>")
+@admin_required
+def view_upload(filename):
+    return send_from_directory(UPLOAD_FOLDER, filename)
 
 
 if __name__ == "__main__":
