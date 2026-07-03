@@ -13,6 +13,9 @@
     <div class="stub-body">
       <p class="stub-label">Ticket filed</p>
       <p class="stub-id">#{{ success_id }}</p>
+      {% if had_attachment %}
+        <p class="stub-note">Your photo was attached successfully.</p>
+      {% endif %}
       <p class="stub-note">Hang onto this number. Someone will follow up once it's picked up.</p>
       <a class="btn-ghost" href="{{ url_for('submit_ticket') }}">File another ticket</a>
     </div>
