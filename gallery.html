@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Photo Drop{% endblock %}
+{% block content %}
+
+<section class="hero">
+  <p class="eyebrow">Upload</p>
+  <h1>Add photos.</h1>
+</section>
+
+<form class="upload-form" method="POST" action="{{ url_for('upload') }}" enctype="multipart/form-data">
+  <label for="uploader">Your name (optional)</label>
+  <input type="text" id="uploader" name="uploader" placeholder="Jordan">
+
+  <!--
+    On iOS Safari, tapping this input opens the native Photos library
+    picker directly -- no separate app needed. "capture" is intentionally
+    left off so it offers "Photo Library" as well as "Take Photo", not
+    just the camera.
+  -->
+  <label for="photos">Choose photos</label>
+  <input type="file" id="photos" name="photos" accept="image/*,video/*" multiple required>
+
+  {% if token_required %}
+    <label for="token">Upload code</label>
+    <input type="password" id="token" name="token" placeholder="Ask whoever set this up" required>
+  {% endif %}
+
+  <button class="btn-primary" type="submit">Upload</button>
+</form>
+
+{% if not photos %}
+  <p class="card-empty">No photos yet.</p>
+{% else %}
+  <div class="photo-grid">
+    {% for p in photos %}
+      <div class="photo-card">
+        {% if p.filename.rsplit('.', 1)[1].lower() in ['heic', 'heif'] %}
+          <div class="photo-fallback">
+            <span>{{ p.original_name }}</span>
+            <a class="btn-ghost" href="{{ url_for('serve_photo', filename=p.filename) }}" download>Download</a>
+          </div>
+        {% elif p.filename.rsplit('.', 1)[1].lower() in ['mp4', 'mov'] %}
+          <video controls preload="metadata">
+            <source src="{{ url_for('serve_photo', filename=p.filename) }}">
+          </video>
+        {% else %}
+          <a href="{{ url_for('serve_photo', filename=p.filename) }}" target="_blank">
+            <img src="{{ url_for('serve_photo', filename=p.filename) }}" loading="lazy" alt="{{ p.original_name }}">
+          </a>
+        {% endif %}
+        <div class="photo-meta">
+          {% if p.uploader %}<span>{{ p.uploader }}</span>{% endif %}
+          <form method="POST" action="{{ url_for('delete_photo', photo_id=p.id) }}">
+            <button class="delete-btn" type="submit" title="Delete">&times;</button>
+          </form>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<p class="field-hint">
+  HEIC photos (iPhone's default format) can't display inline in most browsers --
+  those show as a download link instead. To see full-quality thumbnails here too,
+  either turn on "Most Compatible" in iPhone Settings → Camera → Formats before
+  uploading, or convert on upload later (see README).
+</p>
+
+{% endblock %}
