@@ -227,3 +227,6 @@ main { max-width: 1000px; margin: 0 auto; padding: 48px 24px 80px; }
   main { padding: 32px 16px 60px; }
   .hero h1 { font-size: 1.5rem; }
 }
+
+/* due-soon badge (assignments due within DUE_SOON_HOURS, not yet overdue) */
+.countdown-badge.is-due-soon { background: var(--medium-bg); color: var(--medium); }
