@@ -16,11 +16,12 @@ pip install -r requirements.txt
 python3 app.py
 ```
 
-By default it serves on port **5002** (ticket hub is 5000, uptime monitor is
-5001 — all three can run at once). Visit:
+By default it serves on port **5001** (ticket hub is 5000). Note: when you
+build the uptime monitor, give it a port other than 5001/5000 (e.g. 5002)
+so it doesn't collide with this one. Visit:
 
 ```
-http://<server-ip>:5002
+http://<server-ip>:5001
 ```
 
 ## 2. Set your location for weather
@@ -37,6 +38,10 @@ server has internet access — this call happens server-side.
   scheduled.
 - **Assignments** — add a name, optional class, and due date/time. The
   dashboard shows a live countdown, and flags anything overdue in red.
+  You can also add an optional weight/grade and attach a file (syllabus,
+  rubric, your submission, etc.) to each assignment.
+- **Grades** — see a weighted current-grade estimate per class, based on
+  whichever assignments have both a weight and a grade entered.
 - **To-do** — quick add/check-off list, right on the main dashboard.
 
 ## 4. Run it permanently with systemd
@@ -72,7 +77,7 @@ Same as the other two apps — once your laptop is on the same Tailscale
 network as the server:
 
 ```
-http://<tailscale-name>:5002
+http://<tailscale-name>:5001
 ```
 
 ## Note on privacy/access
@@ -92,4 +97,5 @@ config.json                   Created after you set your location
 schedule.json                 Created after you add your first class
 todos.json                    Created after you add your first to-do
 assignments.json              Created after you add your first assignment
+attachments/                   Uploaded assignment files, created on first upload
 ```
