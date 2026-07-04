@@ -7,8 +7,7 @@
   <h1>Assignments.</h1>
 </section>
 
-<form class="ticket-form" method="POST" action="{{ url_for('assignments_page') }}">
-  <label for="name">Assignment</label>
+<form class="ticket-form" method="POST" action="{{ url_for('assignments_page') }}" enctype="multipart/form-data">  <label for="name">Assignment</label>
   <input type="text" id="name" name="name" placeholder="Problem Set 4" required>
 
   <label for="class_name">Class (optional)</label>
@@ -16,6 +15,15 @@
 
   <label for="due_date">Due</label>
   <input type="datetime-local" id="due_date" name="due_date" required>
+
+  <label for="weight">Weight (optional, e.g. 15 for 15%)</label>
+  <input type="number" step="any" id="weight" name="weight" placeholder="15">
+
+  <label for="grade">Grade (optional, fill in once graded)</label>
+  <input type="number" step="any" id="grade" name="grade" placeholder="92">
+
+  <label for="attachment">Attachment (optional)</label>
+  <input type="file" id="attachment" name="attachment">
 
   <button class="btn-primary" type="submit">Add assignment</button>
 </form>
@@ -30,6 +38,17 @@
           <span class="assignment-name">{{ a.name }}</span>
           {% if a.class_name %}<span class="assignment-class">{{ a.class_name }}</span>{% endif %}
           <p class="assignment-due">Due {{ a.due_dt.strftime('%a %b %-d, %-I:%M %p') }}</p>
+          {% if a.grade is not none %}
+            <p class="assignment-due">Grade: {{ a.grade }}{% if a.weight %} (weight {{ a.weight }}){% endif %}</p>
+          {% endif %}
+          {% if a.attachment_filename %}
+            <a href="{{ url_for('download_attachment', assignment_id=a.id) }}">📎 {{ a.attachment_original_name }}</a>
+          {% endif %}
+          <form method="POST" action="{{ url_for('set_grade', assignment_id=a.id) }}" style="margin-top:6px;">
+            <input type="number" step="any" name="grade" value="{{ a.grade if a.grade is not none else '' }}" placeholder="Grade">
+            <input type="number" step="any" name="weight" value="{{ a.weight if a.weight is not none else '' }}" placeholder="Weight">
+            <button class="btn-ghost" type="submit">Save grade</button>
+          </form>
         </div>
         <div class="assignment-right">
           <span class="countdown-badge {{ 'is-overdue' if a.is_overdue }}">{{ a.countdown_text }}</span>
