@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Archived · Dashboard{% endblock %}
+{% block content %}
+
+<section class="hero">
+  <p class="eyebrow">Archive</p>
+  <h1>Archived assignments.</h1>
+</section>
+
+{% if not assignments %}
+  <p class="card-empty">Nothing archived yet.</p>
+{% else %}
+  <ul class="assignment-list full-list">
+    {% for a in assignments %}
+      <li>
+        <div>
+          <span class="assignment-name">{{ a.name }}</span>
+          {% if a.class_name %}<span class="assignment-class">{{ a.class_name }}</span>{% endif %}
+          {% if a.due_dt %}
+            <p class="assignment-due">Was due {{ a.due_dt.strftime('%a %b %-d, %-I:%M %p') }}</p>
+          {% endif %}
+          {% if a.grade is not none %}
+            <p class="assignment-due">Grade: {{ a.grade }}{% if a.weight %} (weight {{ a.weight }}){% endif %}</p>
+          {% endif %}
+          {% if a.attachment_filename %}
+            <a href="{{ url_for('download_attachment', assignment_id=a.id) }}">📎 {{ a.attachment_original_name }}</a>
+          {% endif %}
+        </div>
+        <div class="assignment-right">
+          <form method="POST" action="{{ url_for('restore_assignment', assignment_id=a.id) }}">
+            <button class="btn-ghost" type="submit">Restore</button>
+          </form>
+          <form method="POST" action="{{ url_for('delete_archived_assignment', assignment_id=a.id) }}"
+                onsubmit="return confirm('Permanently delete this assignment? This can\'t be undone.');">
+            <button class="delete-btn" type="submit">&times;</button>
+          </form>
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+{% endblock %}
