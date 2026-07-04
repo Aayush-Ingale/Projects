@@ -24,7 +24,7 @@ Configuration (environment variables, all optional)
 import json
 import os
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import requests
 from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory
@@ -35,6 +35,7 @@ CONFIG_FILE = os.path.join(APP_DIR, "config.json")
 SCHEDULE_FILE = os.path.join(APP_DIR, "schedule.json")
 TODOS_FILE = os.path.join(APP_DIR, "todos.json")
 ASSIGNMENTS_FILE = os.path.join(APP_DIR, "assignments.json")
+ARCHIVED_ASSIGNMENTS_FILE = os.path.join(APP_DIR, "archived_assignments.json")
 ATTACHMENTS_DIR = os.path.join(APP_DIR, "attachments")
 PORT = int(os.environ.get("DASHBOARD_PORT", "5001"))
 
@@ -43,6 +44,14 @@ os.makedirs(ATTACHMENTS_DIR, exist_ok=True)
 ALLOWED_ATTACHMENT_EXTENSIONS = {
     "pdf", "doc", "docx", "txt", "png", "jpg", "jpeg", "gif", "ppt", "pptx", "xls", "xlsx"
 }
+
+# An assignment counts as "due soon" if it's within this many hours and
+# not already overdue. Used to highlight it in the template.
+DUE_SOON_HOURS = 24
+
+# A class counts as "starting soon" (for the dashboard notification
+# banner) if it's within this many minutes.
+CLASS_NOTIFY_MINUTES = 30
 
 WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
@@ -109,6 +118,11 @@ def load_todos() -> list:
 def load_assignments() -> list:
     """-> list - every assignment, or an empty list."""
     return load_json(ASSIGNMENTS_FILE, [])
+
+
+def load_archived_assignments() -> list:
+    """-> list - every archived assignment, or an empty list."""
+    return load_json(ARCHIVED_ASSIGNMENTS_FILE, [])
 
 
 def allowed_attachment(filename) -> bool:
@@ -186,6 +200,54 @@ def humanize_countdown(due_dt) -> tuple:
 
 
 # =========================================================================
+# NEXT CLASS / NOTIFICATION HELPER
+# =========================================================================
+
+def get_next_class(schedule):
+    """
+    -> dict OR None
+    Finds the next class coming up from right now -- checks the rest of
+    today first, then wraps into the following days if nothing's left
+    today (looks up to a week ahead). Returns the class dict plus two
+    extra keys: "minutes_until" and "is_starting_soon" (True if it starts
+    within CLASS_NOTIFY_MINUTES, which the dashboard uses to decide
+    whether to show the notification banner).
+    """
+    now = datetime.now()
+    current_time_str = now.strftime("%H:%M")
+    today_idx = now.weekday()  # Monday == 0
+
+    for offset in range(8):
+        day_idx = (today_idx + offset) % 7
+        day_name = WEEKDAYS[day_idx]
+        day_classes = sorted(
+            [c for c in schedule if c["day"] == day_name],
+            key=lambda c: c["start_time"],
+        )
+
+        for c in day_classes:
+            if offset == 0 and c["start_time"] <= current_time_str:
+                continue  # already started or already passed today
+
+            try:
+                hour, minute = map(int, c["start_time"].split(":"))
+            except Exception:
+                continue
+
+            target_date = (now + timedelta(days=offset)).date()
+            class_dt = datetime(target_date.year, target_date.month, target_date.day, hour, minute)
+            minutes_until = int((class_dt - now).total_seconds() // 60)
+
+            return {
+                **c,
+                "minutes_until": minutes_until,
+                "is_starting_soon": minutes_until <= CLASS_NOTIFY_MINUTES,
+            }
+
+    return None
+
+
+# =========================================================================
 # GRADE / WEIGHT CALCULATION
 # =========================================================================
 
@@ -259,6 +321,8 @@ def dashboard():
         key=lambda c: c["start_time"],
     )
 
+    next_class = get_next_class(schedule)
+
     todos = load_todos()
     todos_sorted = sorted(todos, key=lambda t: t["done"])
 
@@ -268,7 +332,14 @@ def dashboard():
         try:
             due_dt = datetime.fromisoformat(a["due_date"])
             countdown_text, is_overdue = humanize_countdown(due_dt)
-            enriched.append({**a, "due_dt": due_dt, "countdown_text": countdown_text, "is_overdue": is_overdue})
+            is_due_soon = (not is_overdue) and (due_dt - datetime.now() <= timedelta(hours=DUE_SOON_HOURS))
+            enriched.append({
+                **a,
+                "due_dt": due_dt,
+                "countdown_text": countdown_text,
+                "is_overdue": is_overdue,
+                "is_due_soon": is_due_soon,
+            })
         except Exception:
             continue
     enriched.sort(key=lambda a: a["due_dt"])
@@ -279,6 +350,7 @@ def dashboard():
         weather=weather,
         today_name=today_name,
         todays_classes=todays_classes,
+        next_class=next_class,
         todos=todos_sorted,
         assignments=enriched,
     )
@@ -497,6 +569,7 @@ def assignments_page():
             "grade": grade,
             "attachment_filename": attachment_filename,
             "attachment_original_name": attachment_original_name,
+            "subtasks": [],
         })
         save_json(ASSIGNMENTS_FILE, assignments)
         flash(f'"{name}" added.', "success")
@@ -508,7 +581,14 @@ def assignments_page():
         try:
             due_dt = datetime.fromisoformat(a["due_date"])
             countdown_text, is_overdue = humanize_countdown(due_dt)
-            enriched.append({**a, "due_dt": due_dt, "countdown_text": countdown_text, "is_overdue": is_overdue})
+            is_due_soon = (not is_overdue) and (due_dt - datetime.now() <= timedelta(hours=DUE_SOON_HOURS))
+            enriched.append({
+                **a,
+                "due_dt": due_dt,
+                "countdown_text": countdown_text,
+                "is_overdue": is_overdue,
+                "is_due_soon": is_due_soon,
+            })
         except Exception:
             continue
     enriched.sort(key=lambda a: a["due_dt"])
@@ -558,12 +638,154 @@ def set_grade(assignment_id):
     return redirect(url_for("assignments_page"))
 
 
+# =========================================================================
+# SUBTASKS (checklist items within an assignment)
+# =========================================================================
+
+
+@app.route("/assignments/<assignment_id>/subtasks/add", methods=["POST"])
+def add_subtask(assignment_id):
+    """-> redirect. Adds one checklist item to an assignment's subtasks list."""
+    text = request.form.get("text", "").strip()
+    if text:
+        assignments = load_assignments()
+        for a in assignments:
+            if a["id"] == assignment_id:
+                a.setdefault("subtasks", []).append({
+                    "id": uuid.uuid4().hex[:8],
+                    "text": text,
+                    "done": False,
+                })
+        save_json(ASSIGNMENTS_FILE, assignments)
+    return redirect(url_for("assignments_page"))
+
+
+@app.route("/assignments/<assignment_id>/subtasks/toggle/<subtask_id>", methods=["POST"])
+def toggle_subtask(assignment_id, subtask_id):
+    """-> redirect. Flips done/not-done for one subtask."""
+    assignments = load_assignments()
+    for a in assignments:
+        if a["id"] == assignment_id:
+            for s in a.get("subtasks", []):
+                if s["id"] == subtask_id:
+                    s["done"] = not s["done"]
+    save_json(ASSIGNMENTS_FILE, assignments)
+    return redirect(url_for("assignments_page"))
+
+
+@app.route("/assignments/<assignment_id>/subtasks/delete/<subtask_id>", methods=["POST"])
+def delete_subtask(assignment_id, subtask_id):
+    """-> redirect. Removes one subtask from an assignment's checklist."""
+    assignments = load_assignments()
+    for a in assignments:
+        if a["id"] == assignment_id:
+            a["subtasks"] = [s for s in a.get("subtasks", []) if s["id"] != subtask_id]
+    save_json(ASSIGNMENTS_FILE, assignments)
+    return redirect(url_for("assignments_page"))
+
+
+# =========================================================================
+# ARCHIVE (instead of permanent delete)
+# =========================================================================
+
+
+@app.route("/assignments/archive/<assignment_id>", methods=["POST"])
+def archive_assignment(assignment_id):
+    """
+    -> redirect
+    Moves an assignment out of assignments.json and into
+    archived_assignments.json, instead of deleting it outright. Its
+    attachment file (if any) is left on disk untouched -- only the
+    record moves, so you can still download it from the archive page
+    or restore the assignment later.
+    """
+    assignments = load_assignments()
+    match = next((a for a in assignments if a["id"] == assignment_id), None)
+    if not match:
+        flash("Couldn't find that assignment.", "error")
+        return redirect(url_for("assignments_page"))
+
+    remaining = [a for a in assignments if a["id"] != assignment_id]
+    save_json(ASSIGNMENTS_FILE, remaining)
+
+    archived = load_archived_assignments()
+    match["archived_at"] = datetime.now().isoformat()
+    archived.append(match)
+    save_json(ARCHIVED_ASSIGNMENTS_FILE, archived)
+
+    flash(f'"{match["name"]}" archived.', "success")
+    return redirect(url_for("assignments_page"))
+
+
+@app.route("/assignments/archived")
+def archived_assignments_page():
+    """-> str (HTML). Shows everything you've archived, most recent first."""
+    archived = load_archived_assignments()
+    enriched = []
+    for a in archived:
+        try:
+            due_dt = datetime.fromisoformat(a["due_date"])
+        except Exception:
+            due_dt = None
+        enriched.append({**a, "due_dt": due_dt})
+    enriched.sort(key=lambda a: a.get("archived_at", ""), reverse=True)
+    return render_template("archived.html", assignments=enriched)
+
+
+@app.route("/assignments/restore/<assignment_id>", methods=["POST"])
+def restore_assignment(assignment_id):
+    """-> redirect. Moves an archived assignment back into the active list."""
+    archived = load_archived_assignments()
+    match = next((a for a in archived if a["id"] == assignment_id), None)
+    if not match:
+        flash("Couldn't find that archived assignment.", "error")
+        return redirect(url_for("archived_assignments_page"))
+
+    remaining = [a for a in archived if a["id"] != assignment_id]
+    save_json(ARCHIVED_ASSIGNMENTS_FILE, remaining)
+
+    match.pop("archived_at", None)
+    assignments = load_assignments()
+    assignments.append(match)
+    save_json(ASSIGNMENTS_FILE, assignments)
+
+    flash(f'"{match["name"]}" restored.', "success")
+    return redirect(url_for("assignments_page"))
+
+
+@app.route("/assignments/archived/delete/<assignment_id>", methods=["POST"])
+def delete_archived_assignment(assignment_id):
+    """
+    -> redirect
+    Permanently deletes an archived assignment, including its attachment
+    file if it had one. This is the only truly destructive route left --
+    everything reachable from the main assignments page just archives.
+    """
+    archived = load_archived_assignments()
+    remaining = []
+    for a in archived:
+        if a["id"] == assignment_id:
+            if a.get("attachment_filename"):
+                path = os.path.join(ATTACHMENTS_DIR, a["attachment_filename"])
+                if os.path.exists(path):
+                    os.remove(path)
+            continue
+        remaining.append(a)
+    save_json(ARCHIVED_ASSIGNMENTS_FILE, remaining)
+    flash("Assignment permanently deleted.", "success")
+    return redirect(url_for("archived_assignments_page"))
+
+
 @app.route("/assignments/delete/<assignment_id>", methods=["POST"])
 def delete_assignment(assignment_id):
     """
     -> redirect. Removes one assignment, then goes back to /assignments.
     Also deletes its attachment file off disk, if it had one, so files
     don't pile up in ATTACHMENTS_DIR forever.
+
+    NOTE: this is kept around for direct/permanent deletion, but the
+    assignments.html template should now point its main "remove" button
+    at /assignments/archive/<id> instead, so nothing is lost by accident.
     """
     assignments = load_assignments()
     remaining = []
