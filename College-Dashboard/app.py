@@ -369,9 +369,26 @@ def settings():
     On POST: either returns a redirect (send the browser to a new URL --
     that's what redirect(url_for(...)) produces) or, if something's
     wrong, redirects back to itself so the person can try again.
+
+    NOTE on the "City, Country" format: Open-Meteo's geocoding API only
+    searches by plain location name -- it has no idea what to do with a
+    country or state tacked on after a comma, so a raw query like
+    "Tokyo, Japan" returns zero results. To support that format anyway,
+    we split off anything after the first comma ourselves, search using
+    just the city part, then filter the (up to 10) matches against the
+    qualifier by checking it against each result's admin1/country/
+    country_code fields.
     """
     if request.method == "POST":
-        city = request.form.get("city", "").rstrip()
+        raw = request.form.get("city", "").strip()
+        if not raw:
+            flash("Enter a city name.", "error")
+            return redirect(url_for("settings"))
+
+        parts = [p.strip() for p in raw.split(",", 1)]
+        city = parts[0]
+        qualifier = parts[1] if len(parts) > 1 and parts[1] else None
+
         if not city:
             flash("Enter a city name.", "error")
             return redirect(url_for("settings"))
@@ -379,7 +396,7 @@ def settings():
         try:
             resp = requests.get(
                 "https://geocoding-api.open-meteo.com/v1/search",
-                params={"name": city, "count": 1},
+                params={"name": city, "count": 10},
                 timeout=5
             )
             resp.raise_for_status()
@@ -389,10 +406,31 @@ def settings():
             return redirect(url_for("settings"))
 
         if not results:
-            flash("City not found -- try adding a state or country (e.g. 'State College, PA').", "error")
+            flash("City not found -- double check the spelling and try again.", "error")
             return redirect(url_for("settings"))
 
-        r = results[0]
+        if qualifier:
+            qualifier_lower = qualifier.lower()
+            match = next(
+                (
+                    r for r in results
+                    if qualifier_lower in (r.get("admin1") or "").lower()
+                    or qualifier_lower in (r.get("country") or "").lower()
+                    or qualifier_lower == (r.get("country_code") or "").lower()
+                ),
+                None,
+            )
+            if match is None:
+                flash(
+                    f"Found '{city}', but none of the matches are in '{qualifier}'. "
+                    f"Try just the city name, or double check the state/country.",
+                    "error",
+                )
+                return redirect(url_for("settings"))
+        else:
+            match = results[0]
+
+        r = match
         display = r["name"]
         if r.get("admin1"):
             display += f", {r['admin1']}"
