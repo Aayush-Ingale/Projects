@@ -7,6 +7,13 @@
   <h1>Here's what's going on.</h1>
 </section>
 
+{% if next_class and next_class.is_starting_soon %}
+  <div class="flash flash-success" style="margin-bottom: 24px;">
+    <strong>{{ next_class.name }}</strong> starts in {{ next_class.minutes_until }} min
+    {% if next_class.location %}in {{ next_class.location }}{% endif %}
+  </div>
+{% endif %}
+
 <div class="board">
 
   <div class="board-card weather-card">
@@ -36,6 +43,11 @@
           </li>
         {% endfor %}
       </ul>
+    {% endif %}
+    {% if next_class and not next_class.is_starting_soon %}
+      <p class="assignment-due" style="margin-top: 10px;">
+        Next: {{ next_class.name }} in {{ next_class.minutes_until }} min
+      </p>
     {% endif %}
   </div>
 
@@ -74,7 +86,7 @@
               <span class="assignment-name">{{ a.name }}</span>
               {% if a.class_name %}<span class="assignment-class">{{ a.class_name }}</span>{% endif %}
             </div>
-            <span class="countdown-badge {{ 'is-overdue' if a.is_overdue }}">{{ a.countdown_text }}</span>
+            <span class="countdown-badge {{ 'is-overdue' if a.is_overdue else ('is-due-soon' if a.is_due_soon) }}">{{ a.countdown_text }}</span>
           </li>
         {% endfor %}
       </ul>
