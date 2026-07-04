@@ -1,0 +1,229 @@
+:root {
+  --paper: #F6F4EE;
+  --card: #FFFFFF;
+  --ink: #1E2B25;
+  --ink-soft: #5B6660;
+  --line: #DCD5C4;
+  --teal: #24616B;
+  --teal-deep: #17454D;
+  --high: #B4432D;
+  --high-bg: #F7E4DE;
+  --medium: #B4790E;
+  --medium-bg: #F7ECD6;
+  --low: #4C7A5B;
+  --low-bg: #E3EEE2;
+  --radius: 4px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+h1, h2 { font-family: 'Fraunces', serif; font-weight: 600; letter-spacing: -0.01em; margin: 0; }
+a { color: var(--teal); text-decoration: none; }
+a:hover { text-decoration: underline; }
+:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+
+/* ---------- header ---------- */
+.site-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 22px 32px;
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+}
+.brand { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.15rem; color: var(--ink); }
+.brand:hover { text-decoration: none; }
+.brand-mark { color: var(--teal); margin-right: 4px; }
+.site-header nav a { margin-left: 20px; font-size: 0.9rem; font-weight: 500; color: var(--ink-soft); }
+.site-header nav a:hover { color: var(--teal); }
+
+/* ---------- flash ---------- */
+.flash-stack { max-width: 1000px; margin: 20px auto 0; padding: 0 24px; }
+.flash { padding: 12px 16px; border-radius: var(--radius); font-size: 0.9rem; margin-bottom: 10px; }
+.flash-error { background: var(--high-bg); color: var(--high); }
+.flash-success { background: var(--low-bg); color: var(--low); }
+
+main { max-width: 1000px; margin: 0 auto; padding: 48px 24px 80px; }
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--teal);
+  margin: 0 0 10px;
+}
+.hero h1 { font-size: 2rem; line-height: 1.15; margin-bottom: 32px; }
+
+/* ---------- dashboard board ---------- */
+.board {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+.board-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 22px 24px;
+}
+.card-label {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  margin: 0 0 14px;
+}
+.card-empty { color: var(--ink-soft); font-size: 0.92rem; margin: 0; }
+
+/* weather */
+.weather-card { background: linear-gradient(135deg, var(--teal) 0%, var(--teal-deep) 100%); color: #fff; }
+.weather-card .card-label { color: rgba(255,255,255,0.75); }
+.weather-temp { font-family: 'Fraunces', serif; font-size: 3rem; font-weight: 600; margin: 0; line-height: 1; }
+.weather-desc { font-size: 1.05rem; margin: 6px 0 10px; }
+.weather-meta { font-size: 0.85rem; opacity: 0.8; margin: 0; }
+.weather-card .card-empty { color: rgba(255,255,255,0.85); }
+.weather-card .card-empty a { color: #fff; text-decoration: underline; }
+
+/* classes */
+.class-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.class-list li { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.class-time { font-family: 'IBM Plex Mono', monospace; font-size: 0.82rem; color: var(--teal-deep); font-weight: 500; }
+.class-name { font-weight: 600; }
+.class-location { font-size: 0.85rem; color: var(--ink-soft); }
+
+/* todos */
+.todo-list { list-style: none; margin: 0 0 16px; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.todo-list li { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
+.todo-toggle-form { margin: 0; }
+.todo-check {
+  width: 22px; height: 22px;
+  border: 1.5px solid var(--line);
+  border-radius: 50%;
+  background: var(--card);
+  color: var(--low);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0;
+}
+.todo-list li.is-done .todo-check { background: var(--low-bg); border-color: var(--low); }
+.todo-text { flex: 1; font-size: 0.95rem; }
+.todo-list li.is-done .todo-text { text-decoration: line-through; color: var(--ink-soft); }
+.delete-form { margin: 0; }
+.delete-btn { background: none; border: none; color: var(--ink-soft); font-size: 1.1rem; line-height: 1; cursor: pointer; padding: 2px 6px; }
+.delete-btn:hover { color: var(--high); }
+
+.inline-add-form { display: flex; gap: 8px; border-top: 1px solid var(--line); padding-top: 14px; }
+.inline-add-form input {
+  flex: 1;
+  font-family: inherit;
+  font-size: 0.92rem;
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+/* assignments */
+.assignment-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.assignment-list li { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.assignment-name { font-weight: 600; }
+.assignment-class { font-size: 0.8rem; color: var(--ink-soft); margin-left: 8px; }
+.assignment-due { font-size: 0.8rem; color: var(--ink-soft); margin: 2px 0 0; }
+.countdown-badge {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 100px;
+  background: var(--medium-bg);
+  color: var(--medium);
+  white-space: nowrap;
+}
+.countdown-badge.is-overdue { background: var(--high-bg); color: var(--high); }
+.see-all { display: inline-block; margin-top: 14px; font-size: 0.85rem; font-weight: 600; }
+.assignment-right { display: flex; align-items: center; gap: 10px; }
+.full-list li { border-bottom: 1px solid var(--line); padding-bottom: 12px; }
+.full-list li:last-child { border-bottom: none; }
+
+/* ---------- forms (shared) ---------- */
+.ticket-form { display: flex; flex-direction: column; gap: 6px; max-width: 480px; margin-bottom: 40px; }
+.ticket-form label { font-size: 0.85rem; font-weight: 600; margin-top: 16px; }
+.ticket-form input[type="text"],
+.ticket-form input[type="time"],
+.ticket-form input[type="datetime-local"],
+.ticket-form select {
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--ink);
+}
+.ticket-form input:focus, .ticket-form select:focus { border-color: var(--teal); }
+.field-hint { font-size: 0.82rem; color: var(--ink-soft); margin: 6px 0 0; }
+.time-row { display: flex; gap: 16px; }
+.time-row > div { flex: 1; display: flex; flex-direction: column; }
+
+.btn-primary, .btn-ghost {
+  font-family: inherit;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: var(--radius);
+}
+.btn-primary { margin-top: 28px; padding: 13px 20px; background: var(--teal); color: #fff; border: none; }
+.btn-primary:hover { background: var(--teal-deep); }
+.btn-ghost { padding: 9px 16px; background: transparent; border: 1px solid var(--line); color: var(--ink); }
+.btn-ghost:hover { border-color: var(--teal); color: var(--teal); }
+
+.current-setting { color: var(--ink-soft); font-size: 0.9rem; }
+
+/* ---------- weekly schedule grid ---------- */
+.week-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+}
+.day-column {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+}
+.day-heading {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--teal-deep);
+  margin: 0 0 10px;
+}
+.class-block { border-top: 1px solid var(--line); padding: 10px 0; }
+.class-block:first-of-type { border-top: none; padding-top: 0; }
+.class-block-time { font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: var(--ink-soft); margin: 0; }
+.class-block-name { font-weight: 600; font-size: 0.9rem; margin: 2px 0; }
+.class-block-loc { font-size: 0.8rem; color: var(--ink-soft); margin: 0 0 6px; }
+.class-block form { margin: 0; }
+.class-block .delete-btn { font-size: 0.72rem; padding: 0; }
+
+@media (max-width: 700px) {
+  .board { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .site-header { padding: 18px 20px; flex-direction: column; gap: 10px; align-items: flex-start; }
+  main { padding: 32px 16px 60px; }
+  .hero h1 { font-size: 1.5rem; }
+}

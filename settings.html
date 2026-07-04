@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Settings · Dashboard{% endblock %}
+{% block content %}
+
+<section class="hero">
+  <p class="eyebrow">Settings</p>
+  <h1>Where should we check the weather?</h1>
+</section>
+
+<form class="ticket-form" method="POST" action="{{ url_for('settings') }}">
+  <label for="city">City</label>
+  <input type="text" id="city" name="city" placeholder="State College, PA" required>
+  <p class="field-hint">Add a state or country if the city name is common, so we find the right one.</p>
+  <button class="btn-primary" type="submit">Save location</button>
+</form>
+
+{% if config.city_display %}
+  <p class="current-setting">Currently set to: <strong>{{ config.city_display }}</strong></p>
+{% endif %}
+
+{% endblock %}

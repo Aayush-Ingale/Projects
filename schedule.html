@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Schedule · Dashboard{% endblock %}
+{% block content %}
+
+<section class="hero">
+  <p class="eyebrow">Weekly schedule</p>
+  <h1>Your classes.</h1>
+</section>
+
+<form class="ticket-form" method="POST" action="{{ url_for('schedule_page') }}">
+  <label for="name">Class name</label>
+  <input type="text" id="name" name="name" placeholder="CMPSC 221" required>
+
+  <label for="day">Day</label>
+  <select id="day" name="day" required>
+    {% for day in weekdays %}
+      <option value="{{ day }}">{{ day }}</option>
+    {% endfor %}
+  </select>
+
+  <div class="time-row">
+    <div>
+      <label for="start_time">Starts</label>
+      <input type="time" id="start_time" name="start_time" required>
+    </div>
+    <div>
+      <label for="end_time">Ends</label>
+      <input type="time" id="end_time" name="end_time" required>
+    </div>
+  </div>
+
+  <label for="location">Location (optional)</label>
+  <input type="text" id="location" name="location" placeholder="Willard 062">
+
+  <button class="btn-primary" type="submit">Add class</button>
+</form>
+
+<div class="week-grid">
+  {% for day in weekdays %}
+    <div class="day-column">
+      <p class="day-heading">{{ day }}</p>
+      {% if by_day[day] %}
+        {% for c in by_day[day] %}
+          <div class="class-block">
+            <p class="class-block-time">{{ c.start_time }}–{{ c.end_time }}</p>
+            <p class="class-block-name">{{ c.name }}</p>
+            {% if c.location %}<p class="class-block-loc">{{ c.location }}</p>{% endif %}
+            <form method="POST" action="{{ url_for('delete_class', class_id=c.id) }}">
+              <button class="delete-btn" type="submit">Remove</button>
+            </form>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p class="card-empty">—</p>
+      {% endif %}
+    </div>
+  {% endfor %}
+</div>
+
+{% endblock %}

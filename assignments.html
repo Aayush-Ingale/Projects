@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Assignments · Dashboard{% endblock %}
+{% block content %}
+
+<section class="hero">
+  <p class="eyebrow">Due dates</p>
+  <h1>Assignments.</h1>
+</section>
+
+<form class="ticket-form" method="POST" action="{{ url_for('assignments_page') }}">
+  <label for="name">Assignment</label>
+  <input type="text" id="name" name="name" placeholder="Problem Set 4" required>
+
+  <label for="class_name">Class (optional)</label>
+  <input type="text" id="class_name" name="class_name" placeholder="CMPSC 221">
+
+  <label for="due_date">Due</label>
+  <input type="datetime-local" id="due_date" name="due_date" required>
+
+  <button class="btn-primary" type="submit">Add assignment</button>
+</form>
+
+{% if not assignments %}
+  <p class="card-empty">Nothing added yet.</p>
+{% else %}
+  <ul class="assignment-list full-list">
+    {% for a in assignments %}
+      <li>
+        <div>
+          <span class="assignment-name">{{ a.name }}</span>
+          {% if a.class_name %}<span class="assignment-class">{{ a.class_name }}</span>{% endif %}
+          <p class="assignment-due">Due {{ a.due_dt.strftime('%a %b %-d, %-I:%M %p') }}</p>
+        </div>
+        <div class="assignment-right">
+          <span class="countdown-badge {{ 'is-overdue' if a.is_overdue }}">{{ a.countdown_text }}</span>
+          <form method="POST" action="{{ url_for('delete_assignment', assignment_id=a.id) }}">
+            <button class="delete-btn" type="submit">&times;</button>
+          </form>
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+{% endblock %}

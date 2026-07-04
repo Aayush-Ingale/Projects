@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+
+<section class="hero">
+  <p class="eyebrow">{{ today_name }}</p>
+  <h1>Here's what's going on.</h1>
+</section>
+
+<div class="board">
+
+  <div class="board-card weather-card">
+    <p class="card-label">Weather</p>
+    {% if not config.lat %}
+      <p class="card-empty">No location set yet. <a href="{{ url_for('settings') }}">Add one</a> to see the weather here.</p>
+    {% elif weather %}
+      <p class="weather-temp">{{ weather.temp }}°F</p>
+      <p class="weather-desc">{{ weather.description }}</p>
+      <p class="weather-meta">{{ config.city_display }} · wind {{ weather.wind }} mph</p>
+    {% else %}
+      <p class="card-empty">Couldn't reach the weather service just now.</p>
+    {% endif %}
+  </div>
+
+  <div class="board-card">
+    <p class="card-label">Today's classes</p>
+    {% if not todays_classes %}
+      <p class="card-empty">Nothing on the schedule today. <a href="{{ url_for('schedule_page') }}">Add your schedule</a>.</p>
+    {% else %}
+      <ul class="class-list">
+        {% for c in todays_classes %}
+          <li>
+            <span class="class-time">{{ c.start_time }}–{{ c.end_time }}</span>
+            <span class="class-name">{{ c.name }}</span>
+            {% if c.location %}<span class="class-location">{{ c.location }}</span>{% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </div>
+
+  <div class="board-card">
+    <p class="card-label">To-do</p>
+    <ul class="todo-list">
+      {% for t in todos %}
+        <li class="{{ 'is-done' if t.done }}">
+          <form method="POST" action="{{ url_for('toggle_todo', todo_id=t.id) }}" class="todo-toggle-form">
+            <button type="submit" class="todo-check">{{ '✓' if t.done else '' }}</button>
+          </form>
+          <span class="todo-text">{{ t.text }}</span>
+          <form method="POST" action="{{ url_for('delete_todo', todo_id=t.id) }}" class="delete-form">
+            <button class="delete-btn" type="submit" title="Remove">&times;</button>
+          </form>
+        </li>
+      {% else %}
+        <li class="card-empty">Nothing on your list.</li>
+      {% endfor %}
+    </ul>
+    <form class="inline-add-form" method="POST" action="{{ url_for('add_todo') }}">
+      <input type="text" name="text" placeholder="Add a task..." required>
+      <button class="btn-ghost" type="submit">Add</button>
+    </form>
+  </div>
+
+  <div class="board-card">
+    <p class="card-label">Upcoming assignments</p>
+    {% if not assignments %}
+      <p class="card-empty">Nothing due. <a href="{{ url_for('assignments_page') }}">Add one</a>.</p>
+    {% else %}
+      <ul class="assignment-list">
+        {% for a in assignments[:5] %}
+          <li>
+            <div>
+              <span class="assignment-name">{{ a.name }}</span>
+              {% if a.class_name %}<span class="assignment-class">{{ a.class_name }}</span>{% endif %}
+            </div>
+            <span class="countdown-badge {{ 'is-overdue' if a.is_overdue }}">{{ a.countdown_text }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+      {% if assignments|length > 5 %}
+        <a class="see-all" href="{{ url_for('assignments_page') }}">See all {{ assignments|length }}</a>
+      {% endif %}
+    {% endif %}
+  </div>
+
+</div>
+
+{% endblock %}
