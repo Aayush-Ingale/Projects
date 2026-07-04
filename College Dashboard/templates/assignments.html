@@ -7,7 +7,8 @@
   <h1>Assignments.</h1>
 </section>
 
-<form class="ticket-form" method="POST" action="{{ url_for('assignments_page') }}" enctype="multipart/form-data">  <label for="name">Assignment</label>
+<form class="ticket-form" method="POST" action="{{ url_for('assignments_page') }}" enctype="multipart/form-data">
+  <label for="name">Assignment</label>
   <input type="text" id="name" name="name" placeholder="Problem Set 4" required>
 
   <label for="class_name">Class (optional)</label>
@@ -28,6 +29,10 @@
   <button class="btn-primary" type="submit">Add assignment</button>
 </form>
 
+<p class="field-hint" style="margin-bottom: 20px;">
+  <a href="{{ url_for('archived_assignments_page') }}">View archived assignments →</a>
+</p>
+
 {% if not assignments %}
   <p class="card-empty">Nothing added yet.</p>
 {% else %}
@@ -38,22 +43,46 @@
           <span class="assignment-name">{{ a.name }}</span>
           {% if a.class_name %}<span class="assignment-class">{{ a.class_name }}</span>{% endif %}
           <p class="assignment-due">Due {{ a.due_dt.strftime('%a %b %-d, %-I:%M %p') }}</p>
+
           {% if a.grade is not none %}
             <p class="assignment-due">Grade: {{ a.grade }}{% if a.weight %} (weight {{ a.weight }}){% endif %}</p>
           {% endif %}
+
           {% if a.attachment_filename %}
             <a href="{{ url_for('download_attachment', assignment_id=a.id) }}">📎 {{ a.attachment_original_name }}</a>
           {% endif %}
+
+          <!-- Grade / weight entry -->
           <form method="POST" action="{{ url_for('set_grade', assignment_id=a.id) }}" style="margin-top:6px;">
             <input type="number" step="any" name="grade" value="{{ a.grade if a.grade is not none else '' }}" placeholder="Grade">
             <input type="number" step="any" name="weight" value="{{ a.weight if a.weight is not none else '' }}" placeholder="Weight">
             <button class="btn-ghost" type="submit">Save grade</button>
           </form>
+
+          <!-- Subtasks / checklist -->
+          <ul class="todo-list" style="margin-top:10px;">
+            {% for s in a.subtasks %}
+              <li class="{{ 'is-done' if s.done }}">
+                <form method="POST" action="{{ url_for('toggle_subtask', assignment_id=a.id, subtask_id=s.id) }}" class="todo-toggle-form">
+                  <button type="submit" class="todo-check">{{ '✓' if s.done else '' }}</button>
+                </form>
+                <span class="todo-text">{{ s.text }}</span>
+                <form method="POST" action="{{ url_for('delete_subtask', assignment_id=a.id, subtask_id=s.id) }}" class="delete-form">
+                  <button class="delete-btn" type="submit" title="Remove">&times;</button>
+                </form>
+              </li>
+            {% endfor %}
+          </ul>
+          <form class="inline-add-form" method="POST" action="{{ url_for('add_subtask', assignment_id=a.id) }}" style="max-width: 320px;">
+            <input type="text" name="text" placeholder="Add a subtask..." required>
+            <button class="btn-ghost" type="submit">Add</button>
+          </form>
         </div>
+
         <div class="assignment-right">
-          <span class="countdown-badge {{ 'is-overdue' if a.is_overdue }}">{{ a.countdown_text }}</span>
-          <form method="POST" action="{{ url_for('delete_assignment', assignment_id=a.id) }}">
-            <button class="delete-btn" type="submit">&times;</button>
+          <span class="countdown-badge {{ 'is-overdue' if a.is_overdue else ('is-due-soon' if a.is_due_soon) }}">{{ a.countdown_text }}</span>
+          <form method="POST" action="{{ url_for('archive_assignment', assignment_id=a.id) }}">
+            <button class="delete-btn" type="submit" title="Archive">&times;</button>
           </form>
         </div>
       </li>
