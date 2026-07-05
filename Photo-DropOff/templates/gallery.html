@@ -16,9 +16,21 @@
     picker directly -- no separate app needed. "capture" is intentionally
     left off so it offers "Photo Library" as well as "Take Photo", not
     just the camera.
+
+    NOTE: this is split into two separate inputs (photos vs videos)
+    instead of one input with accept="image/*,video/*". iOS Safari has a
+    known quirk where combining both categories in a single input's
+    "accept" attribute disables multi-select in the picker, silently
+    limiting you to one file at a time. Splitting by category restores
+    proper multi-select. Both inputs share name="photos", so the server
+    receives all selected files together either way -- no backend change
+    needed.
   -->
   <label for="photos">Choose photos</label>
-  <input type="file" id="photos" name="photos" accept="image/*,video/*" multiple required>
+  <input type="file" id="photos" name="photos" accept="image/*" multiple>
+
+  <label for="videos">Choose videos (optional)</label>
+  <input type="file" id="videos" name="photos" accept="video/*" multiple>
 
   {% if token_required %}
     <label for="token">Upload code</label>
