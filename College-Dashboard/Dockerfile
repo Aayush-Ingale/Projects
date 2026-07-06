@@ -11,7 +11,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Match each app's real port
-EXPOSE 5000
+EXPOSE 5001
 
 # If app.py does app.run(host="0.0.0.0", port=5000), this is enough:
 CMD ["python3", "app.py"]
