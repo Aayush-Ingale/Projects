@@ -13,9 +13,7 @@ anything to the public internet.
 | [`ticket_hub/`](./ticket_hub) | Self-hosted help desk — anyone can file a support ticket, admin dashboard to triage/resolve them, plus a dedicated resolved-tickets view | 5000 |
 | [`Photo-DropOff/`](./Photo-DropOff) | Photo/video upload spot for iPhones — upload via Safari's native Photos picker, or straight from the Photos app's Share Sheet using an iOS Shortcut | 5003 |
 | [`Unified-Status-Page/`](./Unified-Status-Page) | One page showing whether everything's actually healthy — HTTP + systemd status for each app, ZFS pool health, disk usage, uptime | 5002 |
-| [`notification_hub/`](./notification_hub) | Aggregates due-soon assignments, open tickets, and recent photo uploads into a single feed | 5004 |
-| [`wiki/`](./wiki) | Self-hosted markdown wiki for documenting the server itself — pages are plain `.md` files on disk | 5005 |
-| [`key_expiry_watcher/`](./key_expiry_watcher) | Shows how many days until each Tailscale device's key expires, so nothing silently loses access | 5006 |
+| [`notification_hub/`](./notification_hub) | Aggregates due-soon assignments, open tickets, and recent photo uploads into a single feed | 5007 |
 
 Each project has its own `README.md` with full setup steps — this file is
 just the overview and the shared conventions across all of them.
@@ -32,16 +30,19 @@ pip install -r requirements.txt
 python3 app.py
 ```
 
-Most keep their data in flat JSON files sitting next to `app.py` (e.g.
+Each keeps its data in flat JSON files sitting next to `app.py` (e.g.
 `assignments.json`, `tickets_database.json`, `photos.json`) — no database
 server to install or maintain. Simple, but back these up manually since
-nothing does it automatically yet. The wiki is the exception — its data
-is plain `.md` files in a `pages/` folder, which is arguably even easier
-to back up.
+nothing does it automatically yet.
+
+`notification_hub` is a bit different from the others — it doesn't hold
+its own data, it just reads the JSON files that `College-Dashboard`,
+`ticket_hub`, and `Photo-DropOff` already write to. Point it at the real
+paths via a `.env` file (see that project's README) so it can find them.
 
 ## Running everything at once
 
-Since each app defaults to a different port, all seven can run
+Since each app defaults to a different port, all five can run
 simultaneously on the same Debian server without conflicting. Each one
 is set up as its own systemd service so it survives reboots and crashes —
 see the individual project READMEs for the exact service file to use.
@@ -79,8 +80,6 @@ sudo tailscale serve --bg --https=8444 http://127.0.0.1:5000   # ticket hub
 sudo tailscale serve --bg --https=8445 http://127.0.0.1:5003   # photo drop
 sudo tailscale serve --bg --https=8446 http://127.0.0.1:5002   # status page
 sudo tailscale serve --bg --https=8447 http://127.0.0.1:5007   # notification hub
-sudo tailscale serve --bg --https=8448 http://127.0.0.1:5008   # wiki
-sudo tailscale serve --bg --https=8449 http://127.0.0.1:5009   # key expiry watcher
 ```
 
 Check current mappings any time with:
@@ -96,8 +95,6 @@ https://<server-tailscale-name>:8444/admin   → ticket hub admin
 https://<server-tailscale-name>:8445/   → photo drop
 https://<server-tailscale-name>:8446/   → status page
 https://<server-tailscale-name>:8447/   → notification hub
-https://<server-tailscale-name>:8448/   → wiki
-https://<server-tailscale-name>:8449/   → key expiry watcher
 ```
 Find `<server-tailscale-name>` by running `tailscale status` on the
 server, or checking the machine's detail page in the Tailscale admin
@@ -138,17 +135,8 @@ Projects/
 │   ├── app.py
 │   ├── templates/
 │   ├── static/
-│   └── requirements.txt
-├── wiki/
-│   ├── app.py
-│   ├── templates/
-│   ├── static/
-│   ├── pages/
-│   └── requirements.txt
-├── key_expiry_watcher/
-│   ├── app.py
-│   ├── templates/
-│   ├── static/
+│   ├── .env.example
+│   ├── .gitignore
 │   └── requirements.txt
 └── README.md   ← you are here
 ```
