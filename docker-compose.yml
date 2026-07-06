@@ -1,0 +1,28 @@
+services:
+  ticket-hub:
+    build: ./ticket_hub
+    container_name: ticket-hub
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./ticket_hub/tickets_database.json:/app/tickets_database.json
+    restart: unless-stopped
+
+  college-dashboard:
+    build: ./College-Dashboard
+    container_name: college-dashboard
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./College-Dashboard/assignments.json:/app/assignments.json
+    restart: unless-stopped
+
+  photo-dropoff:
+    build: ./Photo-DropOff
+    container_name: photo-dropoff
+    ports:
+      - "5003:5003"
+    volumes:
+      - ./Photo-DropOff/photos.json:/app/photos.json
+      - ./Photo-DropOff/uploads:/app/uploads
+    restart: unless-stopped
