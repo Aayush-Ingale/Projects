@@ -43,9 +43,9 @@ All environment variables are optional:
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `NOTIFY_ASSIGNMENTS_FILE` | `/path/to/College-Dashboard/assignments.json` | Path to dorm-dashboard's data file |
-| `NOTIFY_TICKETS_FILE` | `/path/to/ticket_hub/tickets_database.json` | Path to ticket-hub's data file |
-| `NOTIFY_PHOTOS_FILE` | `/path/to/Photo-DropOff/photos.json` | Path to photo-drop's data file |
+| `NOTIFY_ASSIGNMENTS_FILE` | "`/path/to/College-Dashboard/assignments.json`" | Path to dorm-dashboard's data file |
+| `NOTIFY_TICKETS_FILE` | "`/path/to/ticket_hub/tickets_database.json`" | Path to ticket-hub's data file |
+| `NOTIFY_PHOTOS_FILE` | "`/path/to/Photo-DropOff/photos.json`" | Path to photo-drop's data file |
 | `NOTIFY_DUE_SOON_HOURS` | `24` | Hours-out threshold for "due soon" |
 | `NOTIFY_PORT` | `5004` | Port to serve on |
 
