@@ -5,7 +5,7 @@ home server: assignments due soon, open support tickets, and recently
 uploaded photos. Reads directly from the same JSON files your other apps
 already write to — no duplicated data, no syncing needed.
 
-Runs on **port 5007**.
+Runs on **port 5004**.
 
 ## What it shows
 
@@ -43,11 +43,11 @@ All environment variables are optional:
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `NOTIFY_ASSIGNMENTS_FILE` | `/root/Projects/College-Dashboard/assignments.json` | Path to dorm-dashboard's data file |
-| `NOTIFY_TICKETS_FILE` | `/root/Projects/ticket_hub/tickets_database.json` | Path to ticket-hub's data file |
-| `NOTIFY_PHOTOS_FILE` | `/root/Projects/Photo-DropOff/photos.json` | Path to photo-drop's data file |
+| `NOTIFY_ASSIGNMENTS_FILE` | `/path/to/College-Dashboard/assignments.json` | Path to dorm-dashboard's data file |
+| `NOTIFY_TICKETS_FILE` | `/path/to/ticket_hub/tickets_database.json` | Path to ticket-hub's data file |
+| `NOTIFY_PHOTOS_FILE` | `/path/to/Photo-DropOff/photos.json` | Path to photo-drop's data file |
 | `NOTIFY_DUE_SOON_HOURS` | `24` | Hours-out threshold for "due soon" |
-| `NOTIFY_PORT` | `5007` | Port to serve on |
+| `NOTIFY_PORT` | `5004` | Port to serve on |
 
 ## systemd service
 
