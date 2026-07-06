@@ -29,10 +29,10 @@ pip install -r requirements.txt
 these are almost certainly different from the placeholders in the code:
 
 ```bash
-export NOTIFY_ASSIGNMENTS_FILE="/root/Projects/College-Dashboard/assignments.json"
-export NOTIFY_TICKETS_FILE="/root/Projects/ticket_hub/tickets_database.json"
-export NOTIFY_PHOTOS_FILE="/root/Projects/Photo-DropOff/photos.json"
-python3 app.py
+export NOTIFY_ASSIGNMENTS_FILE="/path/to/College-Dashboard/assignments.json"
+export NOTIFY_TICKETS_FILE="/path/to/ticket_hub/tickets_database.json"
+export NOTIFY_PHOTOS_FILE="/path/to/Photo-DropOff/photos.json"
+python3 Unified-Notification-Hub.py
 ```
 
 Visit `http://<server-ip>:5007`.
