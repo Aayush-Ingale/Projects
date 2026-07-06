@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Server Status{% endblock %}
+{% block content %}
+
+<section class="hero">
+  <p class="eyebrow">System uptime</p>
+  <h1>{{ uptime }}</h1>
+</section>
+
+<div class="board">
+
+  <div class="board-card">
+    <p class="card-label">Services</p>
+    <ul class="service-list">
+      {% for svc in services %}
+        <li class="{{ 'is-healthy' if svc.healthy else 'is-down' }}">
+          <div class="service-top">
+            <span class="status-dot"></span>
+            <span class="service-name">{{ svc.name }}</span>
+            <span class="service-state">{{ svc.systemd_state }}</span>
+          </div>
+          <p class="service-detail">
+            {% if svc.http.ok %}
+              HTTP {{ svc.http.status_code }} · {{ svc.http.latency_ms }}ms
+            {% else %}
+              Unreachable{% if svc.http.error %} — {{ svc.http.error }}{% endif %}
+            {% endif %}
+          </p>
+          <div class="service-links">
+            <a href="{{ svc.public_url }}" target="_blank">Open →</a>
+            {% for link in svc.extra_links %}
+              <a href="{{ link.url }}" target="_blank">{{ link.label }} →</a>
+            {% endfor %}
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div class="board-card">
+    <p class="card-label">ZFS Pools</p>
+    {% if not zpools %}
+      <p class="card-empty">No pools found.</p>
+    {% else %}
+      <ul class="pool-list">
+        {% for pool in zpools %}
+          <li class="{{ 'is-healthy' if pool.health == 'ONLINE' else 'is-down' }}">
+            <div class="service-top">
+              <span class="status-dot"></span>
+              <span class="service-name">{{ pool.name }}</span>
+              <span class="service-state">{{ pool.health }}</span>
+            </div>
+            <p class="service-detail">{{ pool.alloc }} used of {{ pool.size }} · {{ pool.free }} free</p>
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </div>
+
+  <div class="board-card">
+    <p class="card-label">Disk Usage</p>
+    {% if not disks %}
+      <p class="card-empty">No paths found.</p>
+    {% else %}
+      <ul class="disk-list">
+        {% for disk in disks %}
+          <li>
+            <div class="service-top">
+              <span class="service-name">{{ disk.path }}</span>
+              <span class="service-state">{{ disk.percent_used }}%</span>
+            </div>
+            <div class="disk-bar">
+              <div class="disk-bar-fill" style="width: {{ disk.percent_used }}%;"></div>
+            </div>
+            <p class="service-detail">{{ disk.used_gb }} GB used of {{ disk.total_gb }} GB · {{ disk.free_gb }} GB free</p>
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </div>
+
+</div>
+
+{% endblock %}
