@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="refresh" content="15">
+{% if session.get('is_logged_in') %}<meta http-equiv="refresh" content="15">{% endif %}
 <title>{% block title %}Launcher{% endblock %}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -12,7 +12,12 @@
 <body>
 <header class="site-header">
   <div class="brand"><span class="brand-mark">▶</span> Launcher</div>
-  <span class="refresh-note">auto-refreshes every 15s</span>
+  {% if session.get('is_logged_in') %}
+    <div class="header-right">
+      <span class="refresh-note">auto-refreshes every 15s</span>
+      <a href="{{ url_for('logout') }}">Log out</a>
+    </div>
+  {% endif %}
 </header>
 
 {% with messages = get_flashed_messages(with_categories=true) %}
