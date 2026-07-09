@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Log in · Launcher{% endblock %}
+{% block content %}
+
+<section class="login-wrap">
+  <form class="login-card" method="POST" action="{{ url_for('login') }}">
+    <p class="eyebrow">Launcher</p>
+    <h1>Unlock the panel</h1>
+    <label for="password">Password</label>
+    <input type="password" id="password" name="password" autofocus required>
+    <button class="btn-primary" type="submit">Log in</button>
+  </form>
+</section>
+
+{% endblock %}
