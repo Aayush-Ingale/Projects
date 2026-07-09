@@ -57,9 +57,9 @@ app.secret_key = os.environ.get("LAUNCHER_SECRET_KEY", os.urandom(24))
 # browser -- separate from the internal port, same pattern as the
 # status page.
 SERVICES = [
-    {"name": "College Dashboard", "systemd": "dorm-dashboard", "public_url": f"https://{TAILSCALE_HOST}:8443/"},
+    {"name": "College Dashboard", "systemd": "College-Dashboard", "public_url": f"https://{TAILSCALE_HOST}:8443/"},
     {"name": "Ticket Hub", "systemd": "ticket-hub", "public_url": f"https://{TAILSCALE_HOST}:8444/"},
-    {"name": "Photo Drop", "systemd": "photo-drop", "public_url": f"https://{TAILSCALE_HOST}:8445/"},
+    {"name": "Photo Drop", "systemd": "Photo-DropOff", "public_url": f"https://{TAILSCALE_HOST}:8445/"},
     {"name": "Status Page", "systemd": "status-page", "public_url": f"https://{TAILSCALE_HOST}:8446/"},
     {"name": "Notification Hub", "systemd": "notification-hub", "public_url": f"https://{TAILSCALE_HOST}:8447/"},
 ]

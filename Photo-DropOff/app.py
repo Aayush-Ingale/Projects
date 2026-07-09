@@ -36,7 +36,7 @@ from flask import (
 from werkzeug.utils import secure_filename
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
-PHOTOS_DIR = os.path.join(APP_DIR, "photos")
+PHOTOS_DIR = "/storagepool/media"
 METADATA_FILE = os.path.join(APP_DIR, "photos.json")
 PORT = int(os.environ.get("PHOTO_DROP_PORT", "5003"))
 UPLOAD_TOKEN = os.environ.get("PHOTO_DROP_UPLOAD_TOKEN", "")

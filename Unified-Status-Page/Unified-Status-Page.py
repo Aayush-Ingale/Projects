@@ -55,7 +55,7 @@ SERVICES = [
     {
         "name": "College Dashboard",
         "systemd": "College-Dashboard",
-        "url": "http://127.0.0.1/5001/",
+        "url": "http://127.0.0.1:5001/",
         "public_url": f"https://{TAILSCALE_HOST}:8444/",
         "extra links": [],
     },
@@ -74,6 +74,13 @@ SERVICES = [
         "systemd": "Photo-DropOff.service",
         "url": "http://127.0.0.1:5003/",
         "public_url": f"https://{TAILSCALE_HOST}:8445/",
+        "extra_links": [],
+    },
+    {
+        "name": "Notification Hub",
+        "systemd": "notification-hub",
+        "url": "http://127.0.0.1:5004/",
+        "public_url": f"https://{TAILSCALE_HOST}:8447/",
         "extra_links": [],
     },
 ]
@@ -118,7 +125,6 @@ def check_http(url) -> dict:
     except Exception as e:
         return {"ok": False, "status_code": None, "latency_ms": None, "error": str(e)}
 
-
 def check_zpools() -> list:
     """
     -> list
@@ -142,7 +148,25 @@ def check_zpools() -> list:
         return pools
     except Exception:
         return []
-
+def check_zpools() -> list:
+    env = os.environ.copy()
+    env["PATH"] = env.get("PATH", "") + os.pathsep + "/sbin" + os.pathsep + "/usr/sbin"
+    try:
+        result = subprocess.run(
+            ["zpool", "list", "-H", "-o", "name,size,alloc,free,health"],
+            capture_output=True, text=True, timeout=5, env=env,
+        )
+        pools = []
+        for line in result.stdout.strip().splitlines():
+            parts = line.split("\t")
+            if len(parts) == 5:
+                pools.append({
+                    "name": parts[0], "size": parts[1], "alloc": parts[2],
+                    "free": parts[3], "health": parts[4],
+                })
+        return pools
+    except Exception:
+        return []
 
 def check_disk_usage(path) -> dict:
     """
@@ -203,8 +227,8 @@ def satus():
             "name": svc["name"],
             "http": http_result,
             "systemd_state": systemd_state,
-            "public_url": svc["public_url"],
-            "extra_links": svc["extra_links"],
+            "public_url": svc.get("public_url", "#"),
+            "extra_links": svc.get("extra_links", []),
             # "healthy" requires BOTH the HTTP check succeeding AND
             # systemd reporting active -- either one failing flags it.
             "healthy": http_result["ok"] and systemd_state == "active",
