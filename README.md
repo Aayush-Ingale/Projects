@@ -13,7 +13,7 @@ anything to the public internet.
 | [`ticket_hub/`](./ticket_hub) | Self-hosted help desk — anyone can file a support ticket, admin dashboard to triage/resolve them, plus a dedicated resolved-tickets view | 5000 |
 | [`Photo-DropOff/`](./Photo-DropOff) | Photo/video upload spot for iPhones — upload via Safari's native Photos picker, or straight from the Photos app's Share Sheet using an iOS Shortcut | 5003 |
 | [`Unified-Status-Page/`](./Unified-Status-Page) | One page showing whether everything's actually healthy — HTTP + systemd status for each app, ZFS pool health, disk usage, uptime | 5002 |
-| [`notification_hub/`](./notification_hub) | Aggregates due-soon assignments, open tickets, and recent photo uploads into a single feed | 5007 |
+| [`notification_hub/`](./notification_hub) | Aggregates due-soon assignments, open tickets, and recent photo uploads into a single feed | 5004 |
 
 Each project has its own `README.md` with full setup steps — this file is
 just the overview and the shared conventions across all of them.
