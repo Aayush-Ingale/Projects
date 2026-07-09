@@ -21,7 +21,7 @@ server paths never get committed to GitHub:
     NOTIFY_PHOTOS_FILE        path to Photo-DropOff's photos.json
     NOTIFY_DUE_SOON_HOURS     assignments due within this many hours count
                               as "due soon" (default: 24)
-    NOTIFY_PORT               port to serve on (default: 5002)
+    NOTIFY_PORT               port to serve on (default: 5004)
 """
 
 import json
@@ -39,7 +39,7 @@ from flask import Flask, render_template
 # paths.
 load_dotenv()
 
-PORT = int(os.environ.get("NOTIFY_PORT", "5002"))
+PORT = int(os.environ.get("NOTIFY_PORT", "5004"))
 DUE_SOON_HOURS = int(os.environ.get("NOTIFY_DUE_SOON_HOURS", "24"))
 
 # Falls back to placeholder paths if .env is missing, so the app still
