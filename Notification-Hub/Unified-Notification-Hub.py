@@ -194,8 +194,11 @@ def feed():
         + get_photo_notifications()
     )
 
-    # Urgent items first, then newest within each group
-    all_notifications.sort(key=lambda n: (not n["Urgent"], -n["timestamp"].timestamp()))
+    # Urgent items first, then newest within each group.
+    # NOTE: this key must match the lowercase "urgent" key set in every
+    # get_*_notifications() builder above -- using "Urgent" here caused
+    # a KeyError the moment any notification existed.
+    all_notifications.sort(key=lambda n: (not n["urgent"], -n["timestamp"].timestamp()))
 
     counts = {
         "assignment": sum(1 for n in all_notifications if n["type"] == "assignment"),
