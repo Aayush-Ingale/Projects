@@ -94,7 +94,7 @@ def run_action(unit_name, action) -> tuple:
 # ROUTES
 # =========================================================================
 
-@app.routes("/")
+@app.route("/")
 def dashboard():
     services = []
     for svc in SERVICES:
