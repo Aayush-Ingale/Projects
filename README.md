@@ -14,6 +14,7 @@ anything to the public internet.
 | [`Photo-DropOff/`](./Photo-DropOff) | Photo/video upload spot for iPhones — upload via Safari's native Photos picker, or straight from the Photos app's Share Sheet using an iOS Shortcut | 5003 |
 | [`Unified-Status-Page/`](./Unified-Status-Page) | One page showing whether everything's actually healthy — HTTP + systemd status for each app, ZFS pool health, disk usage, uptime | 5002 |
 | [`notification_hub/`](./notification_hub) | Aggregates due-soon assignments, open tickets, and recent photo uploads into a single feed | 5004 |
+| [`Launcher/`](./Launcher) | Start, stop, or restart any of the above via `systemctl`, with one-click links into each app once it's running | 5005 |
 
 Each project has its own `README.md` with full setup steps — this file is
 just the overview and the shared conventions across all of them.
@@ -40,12 +41,19 @@ its own data, it just reads the JSON files that `College-Dashboard`,
 `ticket_hub`, and `Photo-DropOff` already write to. Point it at the real
 paths via a `.env` file (see that project's README) so it can find them.
 
+`Launcher` is different too — it doesn't serve a feature of its own, it
+wraps `systemctl` to control the other five services (see its own
+README for the security note on why it isn't exposed the same way as
+the rest).
+
 ## Running everything at once
 
-Since each app defaults to a different port, all five can run
-simultaneously on the same Debian server without conflicting. Each one
-is set up as its own systemd service so it survives reboots and crashes —
-see the individual project READMEs for the exact service file to use.
+Since each app defaults to a different port, all can run simultaneously
+on the same Debian server without conflicting. Each one is set up as its
+own systemd service so it survives reboots and crashes — see the
+individual project READMEs for the exact service file to use, or use
+`Launcher` to start/stop/restart them from one page instead of SSHing in
+each time.
 
 ## Accessing it all remotely — Tailscale + HTTPS
 
@@ -79,13 +87,18 @@ sudo tailscale serve --bg --https=8443 http://127.0.0.1:5001   # dashboard
 sudo tailscale serve --bg --https=8444 http://127.0.0.1:5000   # ticket hub
 sudo tailscale serve --bg --https=8445 http://127.0.0.1:5003   # photo drop
 sudo tailscale serve --bg --https=8446 http://127.0.0.1:5002   # status page
-sudo tailscale serve --bg --https=8447 http://127.0.0.1:5007   # notification hub
+sudo tailscale serve --bg --https=8447 http://127.0.0.1:5004   # notification hub
 ```
 
 Check current mappings any time with:
 ```bash
 sudo tailscale serve status
 ```
+
+**`Launcher` is intentionally left out of this list.** It's the one app
+here that can stop and restart services, not just display data — see
+[`Launcher/README.md`](./Launcher/README.md) for why it's reached via
+SSH tunnel instead of a public Tailscale HTTPS port.
 
 ### URLs (from any device logged into the same tailnet)
 ```
@@ -138,5 +151,11 @@ Projects/
 │   ├── .env.example
 │   ├── .gitignore
 │   └── requirements.txt
+├── Launcher/
+│   ├── app.py
+│   ├── templates/
+│   ├── static/
+│   ├── requirements.txt
+│   └── README.md
 └── README.md   ← you are here
 ```
